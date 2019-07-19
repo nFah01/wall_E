@@ -1,0 +1,314 @@
+//defining pind for sonic sensor
+const int trigPin = 8;
+const int echoPin = 7;
+
+//defining sonic sensor outputs and values
+long duration;
+int distance;
+
+String bubble ="x";
+
+
+#include <Servo.h>
+int servoPin1=3;
+Servo panServo;
+int servoPin4=9;
+Servo tiltServo;
+int servoPin2=5;
+Servo LbrowServo;
+int servoPin3=6;
+
+
+
+
+Servo RbrowServo;
+
+ #include <Adafruit_GFX.h>
+ #include "Adafruit_LEDBackpack.h"
+ #include <Wire.h>
+ #include <LiquidCrystal_I2C.h>
+
+
+Adafruit_8x8matrix matrix1 = Adafruit_8x8matrix();
+Adafruit_8x8matrix matrix2 = Adafruit_8x8matrix();
+
+
+
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+
+
+ 
+ void setup() 
+
+{
+//defining pins as input and output
+pinMode (trigPin, OUTPUT);
+pinMode (echoPin, INPUT);
+
+matrix1.begin(0x70);  //pass the address
+matrix2.begin(0x71);
+
+panServo.attach(servoPin1);
+tiltServo.attach(servoPin4);
+LbrowServo.attach(servoPin2);
+RbrowServo.attach(servoPin3);
+
+
+Serial.begin(9600);
+
+  lcd.begin(16,2);
+  lcd.clear();
+  lcd.print("My name is");  
+  lcd.setCursor(0,1);
+  lcd.print("Wall-E");
+   
+   }
+
+static const uint8_t PROGMEM
+  happy_bmp[] = 
+{
+  B00000000,
+  B00000000,
+  B00111100,
+  B01111110,
+  B11111111,
+  B11111111,
+  B11000011,
+  B10000001,
+},
+    sleepy_bmp[] =
+  { 
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
+  B00000000,
+  B10000001,
+  B01111110,
+},
+heart_bmp[] = 
+{
+  B00000000,
+  B01100110,
+  B11111111,
+  B11111111,
+  B11111111,
+  B01111110,
+  B00111100,
+  B00011000,
+},
+  sad_bmp[] = 
+{
+  B00111100,
+  B01111110,
+  B11011111,
+  B10001011,
+  B11010111,
+  B11111101,
+  B01111110,
+  B00111100
+};
+ 
+ 
+ 
+
+
+void loop() {
+  // put your main code here, to run repeatedly:
+
+
+//clearing trig pin
+digitalWrite(trigPin, LOW);
+delayMicroseconds(2);
+
+//turning sensor
+digitalWrite(trigPin, HIGH);
+delayMicroseconds(10);
+digitalWrite(trigPin, LOW);
+
+
+duration = pulseIn(echoPin, HIGH);
+
+//converting into cm
+distance= duration*0.034/2; 
+
+
+Serial.print("Distance: ");
+Serial.println(distance);
+
+
+if (distance < 25) {
+
+  matrix1.clear();
+  matrix1.drawBitmap(0, 0, happy_bmp, 8, 8, LED_ON);
+  matrix1.writeDisplay();
+} else {
+  matrix1.clear();
+  matrix1.drawBitmap(0, 0, sleepy_bmp, 8, 8, LED_ON);
+  matrix1.writeDisplay();
+ 
+}
+
+if (distance < 25) {
+
+  matrix2.clear();
+  matrix2.drawBitmap(0, 0, happy_bmp, 8, 8, LED_ON);
+  matrix2.writeDisplay();
+} else {
+  matrix2.clear();
+  matrix2.drawBitmap(0, 0, sleepy_bmp, 8, 8, LED_ON);
+  matrix2.writeDisplay();
+ 
+}
+
+
+if (distance < 25) {
+    if (bubble == "y") {
+         lcd.clear(); }       
+  //lcd.clear();
+  lcd.setCursor(0,0);
+  //lcd.begin(16,2);
+  lcd.print("Hello!");  
+  bubble = "x";
+} else {
+  
+  //lcd.begin(16,2);
+  //lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("My name is");  
+  lcd.setCursor(0,1);
+  lcd.print("Wall-E");
+  bubble = "y";
+  
+}
+
+if (distance < 25) {
+
+LbrowServo.write(65);
+RbrowServo.write(115);
+panServo.write(112);
+tiltServo.write(68);
+
+delay(750);
+
+panServo.write(103);
+tiltServo.write(73);
+
+delay(25);
+
+panServo.write(90);
+tiltServo.write(95);
+
+delay(25);
+
+panServo.write(59);
+tiltServo.write(72);
+
+delay(25);
+
+panServo.write(68);
+tiltServo.write(68);
+
+delay(750);
+
+panServo.write(59);
+tiltServo.write(72);
+
+delay(25);
+
+panServo.write(90);
+tiltServo.write(90);
+
+delay (2000);
+
+} else {
+  
+ LbrowServo.write(85);
+ RbrowServo.write(95);
+ panServo.write(90);
+ tiltServo.write(98);
+
+  
+  
+}
+
+if (Serial.available() > 0) {
+  Serial.println("got here");
+  char state = Serial.read();
+  Serial.flush();
+  Serial.println(state);
+  switch (state) {
+
+    case 'l':
+    case 'L':
+    
+    matrix1.clear();
+    matrix1.drawBitmap(0, 0, heart_bmp, 8, 8, LED_ON);
+    matrix1.writeDisplay();
+    matrix2.clear();
+    matrix2.drawBitmap(0, 0, heart_bmp, 8, 8, LED_ON);
+    matrix2.writeDisplay();
+
+    LbrowServo.write(65);
+    RbrowServo.write(115);
+    panServo.write(90);
+    tiltServo.write(95);
+
+    delay(3000);
+    break;
+    
+  case 's':
+  case 'S':
+
+    matrix1.clear();
+    matrix1.drawBitmap(0, 0, sad_bmp, 8, 8, LED_ON);
+    matrix1.writeDisplay();
+    matrix2.clear();
+    matrix2.drawBitmap(0, 0, sad_bmp, 8, 8, LED_ON);
+    matrix2.writeDisplay();
+
+    LbrowServo.write(65);
+    RbrowServo.write(115);
+    panServo.write(90);
+    tiltServo.write(110);
+
+    delay(500);
+
+    LbrowServo.write(65);
+    RbrowServo.write(115);
+    panServo.write(100);
+    tiltServo.write(110);
+
+    delay(500);
+
+    LbrowServo.write(65);
+    RbrowServo.write(115);
+    panServo.write(80);
+    tiltServo.write(110);
+
+    delay(500);
+
+    LbrowServo.write(65);
+    RbrowServo.write(115);
+    panServo.write(90);
+    tiltServo.write(110);
+
+     delay(500);
+
+    LbrowServo.write(65);
+    RbrowServo.write(115);
+    panServo.write(90);
+    tiltServo.write(87);
+
+    delay(1000);
+    break;
+  
+  default:
+    Serial.println("not found");
+     
+  }
+}
+
+}
+  
